@@ -1,0 +1,16 @@
+[package]
+default-run = "snake"
+edition.workspace = true
+name = "snake_cli"
+version.workspace = true
+
+
+[[bin]]
+name = "snake"
+path = "main.rs"
+
+
+[dependencies]
+snake_core = { path = "../core" }
+
+[features]

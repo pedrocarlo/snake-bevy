@@ -1,0 +1,12 @@
+[package]
+edition.workspace = true
+name = "snake_core"
+version.workspace = true
+
+[dependencies]
+bevy = "0.15.2"
+bevy_ecs_tilemap = "0.15.0"
+
+[lib]
+name = "snake_core"
+path = "lib.rs"

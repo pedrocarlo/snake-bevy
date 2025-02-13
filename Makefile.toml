@@ -1,0 +1,28 @@
+[env]
+BEVY_ASSET_ROOT = "."
+
+[tasks.fmt]
+args = ["fmt"]
+command = "cargo"
+workspace = false
+
+# Debug build
+[tasks.snake]
+args = ["run", "--features", "bevy/dynamic_linking"]
+command = "cargo"
+workspace = false
+
+[tasks.clean]
+args = ["clean"]
+command = "cargo"
+workspace = false
+
+[tasks.build]
+args = ["build"]
+command = "cargo"
+workspace = false
+
+[tasks.test]
+args = ["test"]
+command = "cargo"
+workspace = false
