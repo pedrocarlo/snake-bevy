@@ -1,3 +1,6 @@
+use snake_core::build_app;
+
 fn main() {
-    println!("Hello, world!");
+    let mut app = build_app();
+    app.run();
 }

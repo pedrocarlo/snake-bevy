@@ -4,8 +4,13 @@ name = "snake_core"
 version.workspace = true
 
 [dependencies]
+avian2d = "0.2.1"
 bevy = "0.15.2"
+bevy_asset = "0.15.2"
+bevy_dylib = "0.15.2"
 bevy_ecs_tilemap = "0.15.0"
+itertools = "0.14.0"
+leafwing-input-manager = "0.16.0"
 
 [lib]
 name = "snake_core"
