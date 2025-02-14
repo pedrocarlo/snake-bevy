@@ -5,12 +5,12 @@ use itertools::iproduct;
 
 use crate::SpriteSheet;
 
-pub const WORLD_W: usize = 100;
-pub const WORLD_H: usize = 100;
-pub const TILE_W: usize = 16;
-pub const TILE_H: usize = 16;
+pub(crate) const WORLD_W: usize = 30;
+pub(crate) const WORLD_H: usize = 30;
+pub(crate) const TILE_W: usize = 16;
+pub(crate) const TILE_H: usize = 16;
 
-enum SpriteParts {
+pub enum SpriteParts {
     SnakeHead,
     SnakeBody,
     Empty,
@@ -19,11 +19,11 @@ enum SpriteParts {
     Wall,
 }
 
-impl From<TileTextureIndex> for SpriteParts {
-    fn from(value: TileTextureIndex) -> Self {
+impl From<usize> for SpriteParts {
+    fn from(value: usize) -> Self {
         use SpriteParts::*;
 
-        match value.0 {
+        match value {
             0 => SnakeHead,
             1 => SnakeBody,
             2 => Empty,
@@ -35,17 +35,59 @@ impl From<TileTextureIndex> for SpriteParts {
     }
 }
 
-impl From<SpriteParts> for TileTextureIndex {
+impl From<SpriteParts> for usize {
     fn from(value: SpriteParts) -> Self {
         use SpriteParts::*;
         match value {
-            SnakeHead => TileTextureIndex(0),
-            SnakeBody => TileTextureIndex(1),
-            Empty => TileTextureIndex(2),
-            Grass => TileTextureIndex(3),
-            Food => TileTextureIndex(4),
-            Wall => TileTextureIndex(5),
+            SnakeHead => 0,
+            SnakeBody => 1,
+            Empty => 2,
+            Grass => 3,
+            Food => 4,
+            Wall => 5,
         }
+    }
+}
+
+impl From<u32> for SpriteParts {
+    fn from(value: u32) -> Self {
+        use SpriteParts::*;
+
+        match value {
+            0 => SnakeHead,
+            1 => SnakeBody,
+            2 => Empty,
+            3 => Grass,
+            4 => Food,
+            5 => Wall,
+            x => panic!("Unknown TileTextureIndex {x}"),
+        }
+    }
+}
+
+impl From<SpriteParts> for u32 {
+    fn from(value: SpriteParts) -> Self {
+        use SpriteParts::*;
+        match value {
+            SnakeHead => 0,
+            SnakeBody => 1,
+            Empty => 2,
+            Grass => 3,
+            Food => 4,
+            Wall => 5,
+        }
+    }
+}
+
+impl From<TileTextureIndex> for SpriteParts {
+    fn from(value: TileTextureIndex) -> Self {
+        value.0.into()
+    }
+}
+
+impl From<SpriteParts> for TileTextureIndex {
+    fn from(value: SpriteParts) -> Self {
+        TileTextureIndex(value.into())
     }
 }
 
@@ -53,6 +95,8 @@ pub struct TerrainPlugin;
 
 impl Plugin for TerrainPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(TilemapPlugin);
+
         app.add_systems(Startup, gen_terrain);
     }
 }
@@ -107,7 +151,13 @@ fn gen_terrain(mut commands: Commands, texture: Res<SpriteSheet>) {
         }
     });
 
-    let square_coords = box_coords(map_size);
+    let square_coords = box_coords(URect::from_corners(
+        UVec2::new(0, 0),
+        UVec2 {
+            x: map_size.x - 1,
+            y: map_size.y - 1,
+        },
+    ));
 
     commands.entity(tilemap_id.0).with_children(|parent| {
         for UVec2 { x, y } in square_coords {
@@ -134,7 +184,7 @@ fn gen_terrain(mut commands: Commands, texture: Res<SpriteSheet>) {
         y: TILE_H as f32,
     };
     let grid_size = tile_size.into();
-    let map_type = TilemapType::default();
+    let map_type = TilemapType::Square;
 
     commands.entity(tilemap_entity).insert(TilemapBundle {
         grid_size,
@@ -148,10 +198,9 @@ fn gen_terrain(mut commands: Commands, texture: Res<SpriteSheet>) {
     });
 }
 
-fn box_coords(map_size: TilemapSize) -> Vec<UVec2> {
-    let center = UVec2::new(map_size.x / 2, map_size.y / 2);
-    let start = center - center / 4;
-    let end = center + center / 4;
+fn box_coords(rect: URect) -> Vec<UVec2> {
+    let start = rect.min;
+    let end = rect.max;
 
     // Easy to parallel iter with rayon
     iproduct!(start.x..=end.x, start.y..=end.y)

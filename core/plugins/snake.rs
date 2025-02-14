@@ -2,6 +2,10 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+use crate::SpriteSheet;
+
+use super::terrain::{SpriteParts, TILE_H, TILE_W};
+
 pub struct SnakePlugin;
 
 impl Plugin for SnakePlugin {
@@ -34,17 +38,37 @@ impl SnakeAction {
     }
 }
 
-fn spawn_snake(mut commands: Commands) {
+fn spawn_snake(
+    mut commands: Commands,
+    texture: Res<SpriteSheet>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let layout = TextureAtlasLayout::from_grid(
+        UVec2 {
+            x: TILE_W as u32,
+            y: TILE_H as u32,
+        },
+        6,
+        1,
+        None,
+        None,
+    );
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+
     // Spawn the player with the default input_map
     commands
         .spawn(InputManagerBundle::with_map(
             SnakeAction::default_input_map(),
         ))
         .insert(Snake)
-        .insert(Sprite {
-            // texture_atlas: texture.
-            ..Default::default()
-        });
+        .insert(Sprite::from_atlas_image(
+            texture.0.clone(),
+            TextureAtlas {
+                layout: texture_atlas_layout,
+                index: SpriteParts::SnakeHead.into(),
+            },
+        ))
+        .insert(Transform::from_xyz(50.0, 50.0, 2.0));
 }
 
 fn move_snake(query: Query<&ActionState<SnakeAction>, With<Snake>>) {

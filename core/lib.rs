@@ -2,7 +2,7 @@ mod plugins;
 
 use avian2d::prelude::*;
 use bevy::{app::PluginGroupBuilder, prelude::*};
-use bevy_ecs_tilemap::TilemapPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 const SPRITE_SHEET_PATH: &str = "snake-sprite-sheet.png";
 
@@ -38,15 +38,23 @@ pub fn build_app() -> App {
     app.init_resource::<SpriteSheet>();
 
     app.add_systems(PreStartup, (setup, spawn_camera));
-    app.add_plugins(CorePlugins);
-    app.add_plugins(TilemapPlugin);
     app.add_plugins(PhysicsPlugins::default());
+    app.add_plugins(WorldInspectorPlugin::new());
+
+    app.add_plugins(CorePlugins);
 
     app
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, MainCamera));
+    commands.spawn((
+        Camera2d,
+        // OrthographicProjection {
+        //     scale: 2.0,
+        //     ..OrthographicProjection::default_2d()
+        // },
+        MainCamera,
+    ));
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
